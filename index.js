@@ -18,7 +18,7 @@ app.use(bodyParser.json());
 app.use(express.static('public'));
 
 // Import routes
-const dataRoutes = require('./routes/dataRoutes');
+const productRoutes = require('./routes/productRoutes');
 const authRoutes = require('./routes/authRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const tagRoutes = require('./routes/tagRoutes');
@@ -26,7 +26,7 @@ const adminRoutes = require('./routes/adminRoutes');
 
 // Use routes
 app.use('/api/auth', authRoutes);
-app.use('/api/data', dataRoutes);
+app.use('/api/product', productRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/tags', tagRoutes);
 app.use('/api/admin', adminRoutes);

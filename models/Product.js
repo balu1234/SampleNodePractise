@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const dataSchema = new mongoose.Schema({
+const productSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
@@ -24,9 +24,9 @@ const dataSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Tag'
   }],
-  relatedData: [{
+  relatedProducts: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Data'
+    ref: 'Product'
   }],
   createdAt: {
     type: Date,
@@ -39,8 +39,8 @@ const dataSchema = new mongoose.Schema({
 });
 
 // Create indexes for better query performance
-dataSchema.index({ user: 1 });
-dataSchema.index({ category: 1 });
-dataSchema.index({ tags: 1 });
+productSchema.index({ user: 1 });
+productSchema.index({ category: 1 });
+productSchema.index({ tags: 1 });
 
-module.exports = mongoose.model('Data', dataSchema); 
+module.exports = mongoose.model('Product', productSchema); 
