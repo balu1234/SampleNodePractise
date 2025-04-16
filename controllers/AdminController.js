@@ -74,7 +74,7 @@ exports.createUser = async (req, res) => {
 // Update user
 exports.updateUser = async (req, res) => {
   try {
-    const { username, email, role } = req.body;
+    const { username, email, role, phoneNumber } = req.body;
     const userId = req.params.id;
 
     const user = await User.findById(userId);
@@ -86,6 +86,7 @@ exports.updateUser = async (req, res) => {
     user.username = username || user.username;
     user.email = email || user.email;
     user.role = role || user.role;
+    user.phoneNumber = phoneNumber || user.phoneNumber;
 
     await user.save();
 
@@ -95,7 +96,8 @@ exports.updateUser = async (req, res) => {
         id: user._id,
         username: user.username,
         email: user.email,
-        role: user.role
+        role: user.role,
+        phoneNumber: user.phoneNumber
       }
     });
   } catch (error) {

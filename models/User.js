@@ -25,10 +25,23 @@ const userSchema = new mongoose.Schema({
     enum: ['user', 'admin'],
     default: 'user'
   },
+  phoneNumber: {
+    type: String,
+    trim: true,
+    validate: {
+      validator: function(v) {
+        // Basic phone number validation - can be customized based on requirements
+        return /^\+?[\d\s-]{10,}$/.test(v);
+      },
+      message: props => `${props.value} is not a valid phone number!`
+    }
+  },
   createdAt: {
     type: Date,
     default: Date.now
   }
+}, {
+  timestamps: true
 });
 
 // Hash password before saving

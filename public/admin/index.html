@@ -134,6 +134,10 @@
                             <input type="password" class="form-control" name="password" required>
                         </div>
                         <div class="mb-3">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" name="phoneNumber" placeholder="+1234567890">
+                        </div>
+                        <div class="mb-3">
                             <label class="form-label">Role</label>
                             <select class="form-select" name="role" required>
                                 <option value="user">User</option>
@@ -168,6 +172,10 @@
                         <div class="mb-3">
                             <label class="form-label">Email</label>
                             <input type="email" class="form-control" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" name="phoneNumber" placeholder="+1234567890">
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Role</label>
@@ -436,6 +444,7 @@
                             <h5 class="card-title">${user.username}</h5>
                             <p class="card-text">
                                 <i class="bi bi-envelope"></i> ${user.email}<br>
+                                <i class="bi bi-telephone"></i> ${user.phoneNumber || 'Not provided'}<br>
                                 <span class="badge ${user.role === 'admin' ? 'bg-danger' : 'bg-primary'} role-badge">
                                     ${user.role}
                                 </span>
@@ -499,6 +508,7 @@
                 form.id.value = userId;
                 form.username.value = user.username;
                 form.email.value = user.email;
+                form.phoneNumber.value = user.phoneNumber || '';
                 form.role.value = user.role;
 
                 new bootstrap.Modal(document.getElementById('editUserModal')).show();
