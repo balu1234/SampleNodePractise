@@ -408,6 +408,155 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Enhanced File Upload Styles */
+        .file-upload-container {
+            border: 2px dashed #d1d3e2;
+            border-radius: 0.35rem;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            background-color: #f8f9fc;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-upload-container.dragover {
+            border-color: var(--primary-color);
+            background-color: rgba(78, 115, 223, 0.05);
+            transform: scale(1.02);
+        }
+
+        .file-upload-container.dragover::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(78, 115, 223, 0.1), transparent);
+            animation: shine 1.5s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .file-upload-area {
+            cursor: pointer;
+            text-align: center;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload-content {
+            color: var(--secondary-color);
+        }
+
+        .file-upload-content i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+            transition: all 0.3s ease;
+        }
+
+        .file-upload-area:hover .file-upload-content i {
+            transform: translateY(-5px);
+        }
+
+        .file-preview {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background-color: #fff;
+            border-radius: 0.35rem;
+            margin-top: 1rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .file-preview:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.5rem 2rem 0 rgba(58, 59, 69, 0.2);
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .file-info i {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .file-size {
+            color: var(--secondary-color);
+            font-size: 0.875rem;
+            margin-left: 0.5rem;
+        }
+
+        .file-type-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            background-color: rgba(78, 115, 223, 0.1);
+            color: var(--primary-color);
+        }
+
+        .upload-error {
+            color: var(--danger-color);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background-color: rgba(231, 74, 59, 0.1);
+            border-radius: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .upload-error i {
+            font-size: 1rem;
+        }
+
+        .progress {
+            height: 0.5rem;
+            margin-top: 1rem;
+            border-radius: 0.25rem;
+            background-color: #f8f9fc;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: linear-gradient(87deg, #5e72e4 0, #825ee4 100%);
+            transition: width 0.3s ease;
+        }
+
+        .upload-success {
+            color: var(--success-color);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background-color: rgba(28, 200, 138, 0.1);
+            border-radius: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .upload-success i {
+            font-size: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -833,7 +982,30 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Attachment (Optional)</label>
-                            <input type="file" class="form-control" name="attachment" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                            <div class="file-upload-container">
+                                <div class="file-upload-area" id="fileUploadArea">
+                                    <div class="file-upload-content">
+                                        <i class="bi bi-cloud-upload"></i>
+                                        <p>Drag and drop files here or click to browse</p>
+                                        <small class="text-muted">Maximum file size: 100MB. Supported formats: PDF, DOC, DOCX, JPG, PNG</small>
+                                    </div>
+                                    <input type="file" class="form-control d-none" name="attachment" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" id="fileInput">
+                                </div>
+                                <div class="file-preview d-none" id="filePreview">
+                                    <div class="file-info">
+                                        <i class="bi bi-file-earmark"></i>
+                                        <span class="file-name"></span>
+                                        <span class="file-size"></span>
+                                        <span class="file-type-badge"></span>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeFile()">
+                                        <i class="bi bi-x"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="progress mt-2 d-none" id="uploadProgress">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -1580,50 +1752,145 @@
         async function sendEmail() {
             const form = document.getElementById('sendEmailForm');
             const formData = new FormData(form);
-            const userId = formData.get('userId');
             const sendButton = document.querySelector('#sendEmailModal .btn-primary');
             const buttonText = document.getElementById('sendEmailButtonText');
+            const progressBar = document.getElementById('uploadProgress');
+            const progressBarInner = progressBar.querySelector('.progress-bar');
+            const modal = document.getElementById('sendEmailModal');
 
             // Show loading state
             sendButton.disabled = true;
             buttonText.innerHTML = '<span class="loading-spinner"></span> Sending...';
+            progressBar.classList.remove('d-none');
+            progressBarInner.style.width = '0%';
+            progressBarInner.classList.remove('bg-success', 'bg-danger');
+            progressBarInner.classList.add('bg-primary');
 
             try {
+                // Validate form data
+                const email = formData.get('email');
+                const subject = formData.get('subject');
+                const message = formData.get('message');
+                const attachment = formData.get('attachment');
+
+                if (!email || !subject || !message) {
+                    throw new Error('Please fill in all required fields');
+                }
+
                 // Create a new FormData object for the file
                 const emailData = new FormData();
-                emailData.append('email', formData.get('email'));
-                emailData.append('subject', formData.get('subject'));
-                emailData.append('message', formData.get('message'));
+                emailData.append('email', email);
+                emailData.append('subject', subject);
+                emailData.append('message', message);
 
                 // Handle file attachment if present
-                const attachment = formData.get('attachment');
                 if (attachment && attachment.size > 0) {
+                    // Check file size (100MB limit)
+                    if (attachment.size > 100 * 1024 * 1024) {
+                        throw new Error('File size too large. Maximum size is 100MB.');
+                    }
                     emailData.append('attachment', attachment);
                 }
 
-                const response = await fetch('/api/admin/send-email', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: emailData
-                });
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '/api/admin/send-email', true);
+                xhr.setRequestHeader('Authorization', `Bearer ${token}`);
 
-                if (response.ok) {
-                    alert('Email sent successfully');
-                    bootstrap.Modal.getInstance(document.getElementById('sendEmailModal')).hide();
-                    form.reset();
-                } else {
-                    const error = await response.json();
-                    throw new Error(error.message || 'Error sending email');
-                }
+                // Track upload progress
+                xhr.upload.onprogress = function(e) {
+                    if (e.lengthComputable) {
+                        const percentComplete = (e.loaded / e.total) * 100;
+                        progressBarInner.style.width = percentComplete + '%';
+                        progressBarInner.setAttribute('aria-valuenow', percentComplete);
+                        
+                        // Update button text with progress
+                        if (percentComplete < 100) {
+                            buttonText.innerHTML = `<span class="loading-spinner"></span> Uploading: ${Math.round(percentComplete)}%`;
+                        } else {
+                            buttonText.innerHTML = `<span class="loading-spinner"></span> Sending email...`;
+                        }
+                    }
+                };
+
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        // Show success state
+                        progressBarInner.classList.remove('bg-primary');
+                        progressBarInner.classList.add('bg-success');
+                        buttonText.innerHTML = '<i class="bi bi-check-circle"></i> Sent Successfully';
+                        
+                        // Create and show success toast
+                        const toast = document.createElement('div');
+                        toast.className = 'toast show position-fixed top-0 end-0 m-3';
+                        toast.style.zIndex = '9999';
+                        toast.innerHTML = `
+                            <div class="toast-header bg-success text-white">
+                                <strong class="me-auto">Success</strong>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                            </div>
+                            <div class="toast-body">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                Email sent successfully with ${attachment ? 'attachment' : 'no attachment'}
+                            </div>
+                        `;
+                        document.body.appendChild(toast);
+
+                        // Auto-dismiss modal and toast after delay
+                        setTimeout(() => {
+                            bootstrap.Modal.getInstance(modal).hide();
+                            toast.remove();
+                            form.reset();
+                            removeFile();
+                        }, 2000);
+                    } else {
+                        const response = JSON.parse(xhr.responseText);
+                        throw new Error(response.message || 'Error sending email');
+                    }
+                };
+
+                xhr.onerror = function() {
+                    throw new Error('Network error occurred while sending email');
+                };
+
+                xhr.send(emailData);
+
             } catch (error) {
                 console.error('Error sending email:', error);
-                alert(error.message || 'Error sending email');
+                
+                // Show error state
+                progressBarInner.classList.remove('bg-primary');
+                progressBarInner.classList.add('bg-danger');
+                buttonText.innerHTML = '<i class="bi bi-x-circle"></i> Failed';
+                
+                // Create and show error toast
+                const toast = document.createElement('div');
+                toast.className = 'toast show position-fixed top-0 end-0 m-3';
+                toast.style.zIndex = '9999';
+                toast.innerHTML = `
+                    <div class="toast-header bg-danger text-white">
+                        <strong class="me-auto">Error</strong>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                    </div>
+                    <div class="toast-body">
+                        <i class="bi bi-exclamation-circle-fill text-danger me-2"></i>
+                        ${error.message}
+                    </div>
+                `;
+                document.body.appendChild(toast);
+
+                // Auto-dismiss toast after delay
+                setTimeout(() => {
+                    toast.remove();
+                }, 5000);
             } finally {
-                // Reset button state
-                sendButton.disabled = false;
-                buttonText.textContent = 'Send Email';
+                // Reset button state after delay
+                setTimeout(() => {
+                    sendButton.disabled = false;
+                    buttonText.textContent = 'Send Email';
+                    progressBar.classList.add('d-none');
+                    progressBarInner.style.width = '0%';
+                    progressBarInner.classList.remove('bg-primary', 'bg-success', 'bg-danger');
+                }, 2000);
             }
         }
 
@@ -1671,6 +1938,158 @@
                 console.error('Error sending SMS:', error);
                 alert('Error sending SMS');
             }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const fileUploadArea = document.getElementById('fileUploadArea');
+            const fileInput = document.getElementById('fileInput');
+            const filePreview = document.getElementById('filePreview');
+
+            // Handle drag and drop events
+            fileUploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                fileUploadArea.classList.add('dragover');
+            });
+
+            fileUploadArea.addEventListener('dragleave', () => {
+                fileUploadArea.classList.remove('dragover');
+            });
+
+            fileUploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                fileUploadArea.classList.remove('dragover');
+                const file = e.dataTransfer.files[0];
+                handleFile(file);
+            });
+
+            // Handle click to upload
+            fileUploadArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                handleFile(file);
+            });
+        });
+
+        function handleFile(file) {
+            if (!file) return;
+
+            // Check file size (100MB limit)
+            if (file.size > 100 * 1024 * 1024) {
+                showError('File size too large. Maximum size is 100MB.');
+                return;
+            }
+
+            // Check file type
+            const allowedTypes = [
+                'application/pdf',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'image/jpeg',
+                'image/png'
+            ];
+
+            if (!allowedTypes.includes(file.type)) {
+                showError('Invalid file type. Only PDF, DOC, DOCX, JPG, and PNG files are allowed.');
+                return;
+            }
+
+            // Update preview
+            const filePreview = document.getElementById('filePreview');
+            const fileName = filePreview.querySelector('.file-name');
+            const fileSize = filePreview.querySelector('.file-size');
+            const fileType = filePreview.querySelector('.file-type-badge');
+
+            // Set file icon based on type
+            let fileIcon = 'bi-file-earmark';
+            if (file.type.includes('pdf')) {
+                fileIcon = 'bi-file-pdf';
+            } else if (file.type.includes('word')) {
+                fileIcon = 'bi-file-word';
+            } else if (file.type.includes('image')) {
+                fileIcon = 'bi-file-image';
+            }
+
+            // Set file type badge
+            let typeText = 'Unknown';
+            if (file.type.includes('pdf')) {
+                typeText = 'PDF';
+            } else if (file.type.includes('word')) {
+                typeText = 'DOC';
+            } else if (file.type.includes('image')) {
+                typeText = file.type.includes('jpeg') ? 'JPG' : 'PNG';
+            }
+
+            filePreview.querySelector('.file-info i').className = `bi ${fileIcon}`;
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            fileType.textContent = typeText;
+            filePreview.classList.remove('d-none');
+
+            // Show success message
+            showSuccess('File selected successfully');
+
+            // Clear any previous errors
+            const errorElement = document.querySelector('.upload-error');
+            if (errorElement) {
+                errorElement.remove();
+            }
+        }
+
+        function removeFile() {
+            const fileInput = document.getElementById('fileInput');
+            const filePreview = document.getElementById('filePreview');
+            
+            fileInput.value = '';
+            filePreview.classList.add('d-none');
+        }
+
+        function showSuccess(message) {
+            // Remove any existing success message
+            const existingSuccess = document.querySelector('.upload-success');
+            if (existingSuccess) {
+                existingSuccess.remove();
+            }
+
+            // Create and append new success message
+            const successElement = document.createElement('div');
+            successElement.className = 'upload-success';
+            successElement.innerHTML = `<i class="bi bi-check-circle"></i> ${message}`;
+            document.querySelector('.file-upload-container').appendChild(successElement);
+
+            // Remove success message after 3 seconds
+            setTimeout(() => {
+                successElement.remove();
+            }, 3000);
+        }
+
+        function showError(message) {
+            // Remove any existing error message
+            const existingError = document.querySelector('.upload-error');
+            if (existingError) {
+                existingError.remove();
+            }
+
+            // Create and append new error message
+            const errorElement = document.createElement('div');
+            errorElement.className = 'upload-error';
+            errorElement.innerHTML = `<i class="bi bi-exclamation-circle"></i> ${message}`;
+            document.querySelector('.file-upload-container').appendChild(errorElement);
+
+            // Remove error message after 5 seconds
+            setTimeout(() => {
+                errorElement.remove();
+            }, 5000);
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
     </script>
 </body>
