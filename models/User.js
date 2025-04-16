@@ -36,6 +36,17 @@ const userSchema = new mongoose.Schema({
       message: props => `${props.value} is not a valid phone number!`
     }
   },
+  isPhoneVerified: {
+    type: Boolean,
+    default: false
+  },
+  phoneVerificationCode: {
+    type: String,
+    expires: '10m' // Code expires after 10 minutes
+  },
+  phoneVerificationCodeExpires: {
+    type: Date
+  },
   createdAt: {
     type: Date,
     default: Date.now
