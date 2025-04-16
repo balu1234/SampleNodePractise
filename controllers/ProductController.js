@@ -9,7 +9,7 @@ exports.getAllData = async (req, res) => {
       .populate('user', 'username email')
       .populate('category', 'name description')
       .populate('tags', 'name color')
-      .populate('relatedProducts', 'title description')
+      .populate('relatedProducts', 'title description image')
       .sort({ createdAt: -1 });
     
     res.json(products);
@@ -27,7 +27,7 @@ exports.getDataById = async (req, res) => {
       .populate('user', 'username email')
       .populate('category', 'name description')
       .populate('tags', 'name color')
-      .populate('relatedProducts', 'title description');
+      .populate('relatedProducts', 'title description image');
 
     if (!product) {
       return res.status(404).json({ message: 'Product not found or unauthorized' });
@@ -42,7 +42,7 @@ exports.getDataById = async (req, res) => {
 // Create new product with relationships
 exports.createData = async (req, res) => {
   try {
-    const { title, description, category, tags, relatedProducts } = req.body;
+    const { title, description, image, category, tags, relatedProducts } = req.body;
     
     // Validate category if provided
     if (category) {
@@ -74,6 +74,7 @@ exports.createData = async (req, res) => {
     const newProduct = new Product({
       title,
       description,
+      image,
       user: req.user.id,
       category,
       tags,
@@ -87,7 +88,7 @@ exports.createData = async (req, res) => {
       .populate('user', 'username email')
       .populate('category', 'name description')
       .populate('tags', 'name color')
-      .populate('relatedProducts', 'title description');
+      .populate('relatedProducts', 'title description image');
 
     res.status(201).json(populatedProduct);
   } catch (error) {
@@ -99,7 +100,7 @@ exports.createData = async (req, res) => {
 exports.updateData = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, description, category, tags, relatedProducts } = req.body;
+    const { title, description, image, category, tags, relatedProducts } = req.body;
 
     // Find product and check ownership
     const product = await Product.findOne({ _id: id, user: req.user.id });
@@ -137,6 +138,7 @@ exports.updateData = async (req, res) => {
     // Update product
     product.title = title || product.title;
     product.description = description || product.description;
+    product.image = image || product.image;
     product.category = category || product.category;
     product.tags = tags || product.tags;
     product.relatedProducts = relatedProducts || product.relatedProducts;
@@ -149,7 +151,7 @@ exports.updateData = async (req, res) => {
       .populate('user', 'username email')
       .populate('category', 'name description')
       .populate('tags', 'name color')
-      .populate('relatedProducts', 'title description');
+      .populate('relatedProducts', 'title description image');
 
     res.json(populatedProduct);
   } catch (error) {
@@ -176,7 +178,15 @@ exports.patchData = async (req, res) => {
     product.updatedAt = Date.now();
 
     const updatedProduct = await product.save();
-    res.json(updatedProduct);
+    
+    // Populate relationships before sending response
+    const populatedProduct = await Product.findById(updatedProduct._id)
+      .populate('user', 'username email')
+      .populate('category', 'name description')
+      .populate('tags', 'name color')
+      .populate('relatedProducts', 'title description image');
+
+    res.json(populatedProduct);
   } catch (error) {
     res.status(500).json({ message: 'Error patching product', error: error.message });
   }
