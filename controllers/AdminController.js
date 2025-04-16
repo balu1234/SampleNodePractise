@@ -1,4 +1,7 @@
 const User = require('../models/User');
+const nodemailer = require('nodemailer');
+const path = require('path');
+const fs = require('fs');
 
 // Get all users
 exports.getAllUsers = async (req, res) => {
@@ -120,4 +123,108 @@ exports.deleteUser = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Error deleting user', error: error.message });
   }
+};
+
+exports.sendEmail = async (req, res) => {
+    try {
+        const { email, subject, message } = req.body;
+        const attachment = req.file;
+
+        console.log('Email request received:', { email, subject, message, attachment });
+
+        // Validate required fields
+        if (!email || !subject || !message) {
+            return res.status(400).json({ 
+                message: 'Email, subject, and message are required fields' 
+            });
+        }
+
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ 
+                message: 'Invalid email format' 
+            });
+        }
+
+        // Check if email credentials are configured
+        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
+            console.error('Email credentials missing in environment variables');
+            return res.status(500).json({ 
+                message: 'Email configuration is missing. Please check your environment variables.' 
+            });
+        }
+
+        // Create a transporter with secure configuration
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            host: 'smtp.gmail.com',
+            port: 587,
+            secure: false,
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASSWORD
+            },
+            tls: {
+                rejectUnauthorized: false
+            }
+        });
+
+        // Verify transporter configuration
+        try {
+            await transporter.verify();
+            console.log('Email server connection verified');
+        } catch (error) {
+            console.error('Email configuration error:', error);
+            return res.status(500).json({ 
+                message: 'Email configuration error. Please check your credentials.',
+                error: error.message 
+            });
+        }
+
+        // Email options
+        const mailOptions = {
+            from: `"Admin" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: subject,
+            text: message,
+            html: `<p>${message.replace(/\n/g, '<br>')}</p>`
+        };
+
+        // Add attachment if present
+        if (attachment) {
+            console.log('Adding attachment:', attachment.originalname);
+            mailOptions.attachments = [{
+                filename: attachment.originalname,
+                path: attachment.path
+            }];
+        }
+
+        // Send email
+        console.log('Attempting to send email...');
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Email sent successfully:', info.response);
+
+        // Clean up attachment file if it exists
+        if (attachment) {
+            try {
+                fs.unlinkSync(attachment.path);
+                console.log('Attachment file cleaned up successfully');
+            } catch (error) {
+                console.error('Error cleaning up attachment:', error);
+            }
+        }
+
+        res.status(200).json({ 
+            message: 'Email sent successfully',
+            info: info.response 
+        });
+    } catch (error) {
+        console.error('Error sending email:', error);
+        res.status(500).json({ 
+            message: 'Error sending email', 
+            error: error.message,
+            details: error.stack 
+        });
+    }
 }; 
