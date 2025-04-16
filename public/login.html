@@ -3,83 +3,332 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Admin Panel</title>
+    <title>Login</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #4e73df;
+            --secondary-color: #858796;
+            --success-color: #1cc88a;
+            --info-color: #36b9cc;
+            --warning-color: #f6c23e;
+            --danger-color: #e74a3b;
+            --light-color: #f8f9fc;
+            --dark-color: #5a5c69;
+        }
+
         body {
-            height: 100vh;
+            background: linear-gradient(135deg, #f8f9fc 0%, #e3e6f0 100%);
+            min-height: 100vh;
             display: flex;
             align-items: center;
-            background-color: #f5f5f5;
+            justify-content: center;
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
-        .form-signin {
+
+        .login-container {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.1);
+            padding: 2rem;
             width: 100%;
-            max-width: 330px;
-            padding: 15px;
-            margin: auto;
+            max-width: 400px;
+            position: relative;
+            overflow: hidden;
         }
-        .form-signin .form-floating:focus-within {
-            z-index: 2;
+
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(87deg, #5e72e4 0, #825ee4 100%);
         }
-        .form-signin input[type="email"] {
-            margin-bottom: -1px;
-            border-bottom-right-radius: 0;
-            border-bottom-left-radius: 0;
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
         }
-        .form-signin input[type="password"] {
-            margin-bottom: 10px;
-            border-top-left-radius: 0;
-            border-top-right-radius: 0;
+
+        .login-header h1 {
+            color: var(--primary-color);
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            animation: fadeInDown 0.5s ease-out;
+        }
+
+        .login-header p {
+            color: var(--secondary-color);
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .form-control {
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d3e2;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .form-floating {
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .form-floating label {
+            color: var(--secondary-color);
+        }
+
+        .btn-login {
+            background: linear-gradient(87deg, #5e72e4 0, #825ee4 100%);
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            font-weight: 600;
+            color: white;
+            width: 100%;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.5rem 1rem rgba(78, 115, 223, 0.25);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .btn-login::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+
+        .btn-login:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
+        }
+
+        .alert {
+            border-radius: 0.5rem;
+            border: none;
+            animation: fadeInDown 0.5s ease-out;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--secondary-color);
+            transition: all 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: var(--primary-color);
+        }
+
+        .form-floating {
+            position: relative;
+        }
+
+        .form-floating .password-toggle {
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .form-floating .form-control:focus ~ .password-toggle {
+            color: var(--primary-color);
+        }
+
+        /* Shake animation for invalid input */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .shake {
+            animation: shake 0.5s ease-in-out;
         }
     </style>
 </head>
 <body>
-    <main class="form-signin">
-        <form id="loginForm">
-            <h1 class="h3 mb-3 fw-normal text-center">Admin Panel Login</h1>
-            
+    <div class="login-container animate__animated animate__fadeIn">
+        <div class="login-header">
+            <h1>Welcome Back</h1>
+            <p>Please login to your account</p>
+        </div>
+        
+        <div id="alertContainer"></div>
+        
+        <form id="loginForm" onsubmit="return handleLogin(event)">
             <div class="form-floating">
                 <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" required>
                 <label for="email">Email address</label>
             </div>
+            
             <div class="form-floating">
                 <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
                 <label for="password">Password</label>
+                <i class="bi bi-eye password-toggle" onclick="togglePassword()"></i>
             </div>
-
-            <button class="w-100 btn btn-lg btn-primary" type="submit">Sign in</button>
-            <p class="mt-5 mb-3 text-muted text-center">&copy; 2024</p>
-        </form>
-    </main>
-
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
             
-            const formData = new FormData(e.target);
-            const data = Object.fromEntries(formData);
+            <button type="submit" class="btn btn-login" id="loginButton">
+                <span id="loginButtonText">Login</span>
+            </button>
+        </form>
+    </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let isPasswordVisible = false;
+
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.querySelector('.password-toggle');
+            
+            isPasswordVisible = !isPasswordVisible;
+            passwordInput.type = isPasswordVisible ? 'text' : 'password';
+            toggleIcon.classList.toggle('bi-eye');
+            toggleIcon.classList.toggle('bi-eye-slash');
+        }
+
+        function showAlert(message, type = 'danger') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} animate__animated animate__fadeInDown`;
+            alert.innerHTML = message;
+            
+            alertContainer.innerHTML = '';
+            alertContainer.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.classList.add('animate__fadeOutUp');
+                setTimeout(() => alert.remove(), 500);
+            }, 3000);
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const email = form.email.value;
+            const password = form.password.value;
+            const loginButton = document.getElementById('loginButton');
+            const loginButtonText = document.getElementById('loginButtonText');
+            
+            // Show loading state
+            loginButton.disabled = true;
+            loginButtonText.innerHTML = '<span class="loading-spinner"></span> Logging in...';
+            
             try {
                 const response = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(data)
+                    body: JSON.stringify({ email, password })
                 });
-
-                const result = await response.json();
-
+                
+                const data = await response.json();
+                
                 if (response.ok) {
-                    localStorage.setItem('token', result.token);
-                    window.location.href = '/admin/index.html';
+                    localStorage.setItem('token', data.token);
+                    showAlert('Login successful! Redirecting...', 'success');
+                    
+                    // Add success animation
+                    loginButton.classList.add('animate__animated', 'animate__pulse');
+                    
+                    setTimeout(() => {
+                        window.location.href = '/admin/index.html';
+                    }, 1000);
                 } else {
-                    alert(result.message || 'Login failed');
+                    throw new Error(data.message || 'Login failed');
                 }
             } catch (error) {
-                console.error('Login error:', error);
-                alert('Error during login');
+                // Add shake animation to form
+                form.classList.add('animate__animated', 'animate__shakeX');
+                setTimeout(() => {
+                    form.classList.remove('animate__animated', 'animate__shakeX');
+                }, 1000);
+                
+                showAlert(error.message);
+                
+                // Reset button state
+                loginButton.disabled = false;
+                loginButtonText.textContent = 'Login';
             }
+            
+            return false;
+        }
+
+        // Add input validation animations
+        document.querySelectorAll('.form-control').forEach(input => {
+            input.addEventListener('invalid', function() {
+                this.classList.add('animate__animated', 'animate__shakeX');
+                setTimeout(() => {
+                    this.classList.remove('animate__animated', 'animate__shakeX');
+                }, 1000);
+            });
         });
     </script>
 </body>
