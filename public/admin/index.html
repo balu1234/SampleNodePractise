@@ -39,7 +39,7 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
+                <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="#" onclick="showSection('users')">Users</a>
                     </li>
@@ -53,6 +53,11 @@
                         <a class="nav-link" href="#" onclick="showSection('tags')">Tags</a>
                     </li>
                 </ul>
+                <div class="d-flex">
+                    <button class="btn btn-outline-light" onclick="logout()">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
@@ -429,6 +434,14 @@
         let token = localStorage.getItem('token');
         if (!token) {
             window.location.href = '/login.html';
+        }
+
+        // Add logout function
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('token');
+                window.location.href = '/login.html';
+            }
         }
 
         // Load data on page load
