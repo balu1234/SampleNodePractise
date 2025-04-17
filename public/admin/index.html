@@ -557,91 +557,280 @@
         .upload-success i {
             font-size: 1rem;
         }
+
+        /* Side Menu Styles */
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .side-menu {
+            width: 250px;
+            background: linear-gradient(87deg, #5e72e4 0, #825ee4 100%);
+            color: white;
+            padding: 1rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .side-menu-header {
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .side-menu-header h3 {
+            color: white;
+            font-weight: 700;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .side-menu-header h3 i {
+            font-size: 1.5rem;
+        }
+
+        .side-menu-nav {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .side-menu-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .side-menu-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .side-menu-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .side-menu-link.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .side-menu-link i {
+            font-size: 1.25rem;
+        }
+
+        .side-menu-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 2rem;
+            background-color: #f8f9fc;
+            min-height: 100vh;
+        }
+
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1001;
+            background: linear-gradient(87deg, #5e72e4 0, #825ee4 100%);
+            border: none;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .side-menu {
+                width: 100%;
+                transform: translateX(-100%);
+            }
+
+            .side-menu.show {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+            }
+        }
+
+        .user-info {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .user-name {
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-name i {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .user-email {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.85rem;
+            word-break: break-all;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-email i {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="#">Admin Panel</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="showSection('users')">Users</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="showSection('products')">Products</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="showSection('categories')">Categories</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="showSection('tags')">Tags</a>
-                    </li>
-                </ul>
-                <div class="d-flex">
-                    <button class="btn btn-outline-light" onclick="logout()">
-                        <i class="bi bi-box-arrow-right"></i> Logout
-                    </button>
+    <div class="admin-container">
+        <!-- Side Menu -->
+        <nav class="side-menu">
+            <div class="side-menu-header">
+                <h3>
+                    <i class="bi bi-shield-lock"></i>
+                    Admin Portal
+                </h3>
+                <div class="user-info">
+                    <div class="user-name">
+                        <i class="bi bi-person-circle"></i>
+                        <span id="loggedUserName">Loading...</span>
+                    </div>
+                    <div class="user-email">
+                        <i class="bi bi-envelope"></i>
+                        <span id="loggedUserEmail">Loading...</span>
+                    </div>
                 </div>
             </div>
-        </div>
-    </nav>
-
-    <div class="container mt-4">
-        <!-- Users Section -->
-        <div id="usersSection">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>User Management</h2>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createUserModal">
-                    <i class="bi bi-plus-circle"></i> Create User
+            <ul class="side-menu-nav">
+                <li class="side-menu-item">
+                    <a href="#" class="side-menu-link active" onclick="showSection('users')">
+                        <i class="bi bi-people"></i>
+                        Users
+                    </a>
+                </li>
+                <li class="side-menu-item">
+                    <a href="#" class="side-menu-link" onclick="showSection('products')">
+                        <i class="bi bi-box"></i>
+                        Products
+                    </a>
+                </li>
+                <li class="side-menu-item">
+                    <a href="#" class="side-menu-link" onclick="showSection('categories')">
+                        <i class="bi bi-tags"></i>
+                        Categories
+                    </a>
+                </li>
+                <li class="side-menu-item">
+                    <a href="#" class="side-menu-link" onclick="showSection('tags')">
+                        <i class="bi bi-tag"></i>
+                        Tags
+                    </a>
+                </li>
+            </ul>
+            <div class="side-menu-footer">
+                <button class="btn btn-outline-light w-100" onclick="logout()">
+                    <i class="bi bi-box-arrow-right"></i> Logout
                 </button>
             </div>
-            <div class="row" id="usersList">
-                <!-- Users will be loaded here -->
-            </div>
-        </div>
+        </nav>
 
-        <!-- Products Section -->
-        <div id="productsSection" style="display: none;">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>Product Management</h2>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createProductModal">
-                    <i class="bi bi-plus-circle"></i> Create Product
-                </button>
-            </div>
-            <div class="row" id="productsList">
-                <!-- Products will be loaded here -->
-            </div>
-        </div>
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle" onclick="toggleSideMenu()">
+            <i class="bi bi-list"></i>
+        </button>
 
-        <!-- Categories Section -->
-        <div id="categoriesSection" style="display: none;">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>Category Management</h2>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createCategoryModal">
-                    <i class="bi bi-plus-circle"></i> Create Category
-                </button>
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Users Section -->
+            <div id="usersSection">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>User Management</h2>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createUserModal">
+                        <i class="bi bi-plus-circle"></i> Create User
+                    </button>
+                </div>
+                <div class="row" id="usersList">
+                    <!-- Users will be loaded here -->
+                </div>
             </div>
-            <div class="row" id="categoriesList">
-                <!-- Categories will be loaded here -->
-            </div>
-        </div>
 
-        <!-- Tags Section -->
-        <div id="tagsSection" style="display: none;">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>Tag Management</h2>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTagModal">
-                    <i class="bi bi-plus-circle"></i> Create Tag
-                </button>
+            <!-- Products Section -->
+            <div id="productsSection" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Product Management</h2>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createProductModal">
+                        <i class="bi bi-plus-circle"></i> Create Product
+                    </button>
+                </div>
+                <div class="row" id="productsList">
+                    <!-- Products will be loaded here -->
+                </div>
             </div>
-            <div class="row" id="tagsList">
-                <!-- Tags will be loaded here -->
+
+            <!-- Categories Section -->
+            <div id="categoriesSection" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Category Management</h2>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createCategoryModal">
+                        <i class="bi bi-plus-circle"></i> Create Category
+                    </button>
+                </div>
+                <div class="row" id="categoriesList">
+                    <!-- Categories will be loaded here -->
+                </div>
             </div>
-        </div>
+
+            <!-- Tags Section -->
+            <div id="tagsSection" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Tag Management</h2>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTagModal">
+                        <i class="bi bi-plus-circle"></i> Create Tag
+                    </button>
+                </div>
+                <div class="row" id="tagsList">
+                    <!-- Tags will be loaded here -->
+                </div>
+            </div>
+        </main>
     </div>
 
     <!-- Create User Modal -->
@@ -1030,17 +1219,24 @@
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.removeItem('token');
+                localStorage.removeItem('user');
                 window.location.href = '/login.html';
             }
         }
 
         // Load data on page load
         document.addEventListener('DOMContentLoaded', () => {
+            loadCurrentUser();
             loadUsers();
             loadProducts();
             loadCategories();
             loadTags();
         });
+
+        function toggleSideMenu() {
+            const sideMenu = document.querySelector('.side-menu');
+            sideMenu.classList.toggle('show');
+        }
 
         function showSection(section) {
             const sections = ['users', 'products', 'categories', 'tags'];
@@ -1049,26 +1245,24 @@
                 if (s === section) {
                     element.style.display = 'block';
                     element.classList.add('section-transition', 'animate__animated', 'animate__fadeIn');
-                    if (s === 'products') {
-                        element.classList.add('animate__slideInRight');
-                    } else if (s === 'users') {
-                        element.classList.add('animate__slideInLeft');
-                    } else {
-                        element.classList.add('animate__zoomIn');
-                    }
                 } else {
                     element.style.display = 'none';
-                    element.classList.remove('animate__animated', 'animate__fadeIn', 'animate__slideInRight', 'animate__slideInLeft', 'animate__zoomIn');
+                    element.classList.remove('animate__animated', 'animate__fadeIn');
                 }
             });
             
-            // Update active nav link with animation
-            document.querySelectorAll('.nav-link').forEach(link => {
+            // Update active menu item
+            document.querySelectorAll('.side-menu-link').forEach(link => {
                 link.classList.remove('active');
-                if (link.textContent.toLowerCase() === section) {
-                    link.classList.add('active', 'animate__animated', 'animate__pulse');
+                if (link.textContent.trim().toLowerCase() === section) {
+                    link.classList.add('active');
                 }
             });
+
+            // Close mobile menu if open
+            if (window.innerWidth <= 768) {
+                document.querySelector('.side-menu').classList.remove('show');
+            }
         }
 
         // User Management Functions
@@ -2090,6 +2284,46 @@
             const sizes = ['Bytes', 'KB', 'MB', 'GB'];
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        async function loadCurrentUser() {
+            try {
+                // Get user data from localStorage that was stored during login
+                const storedUser = JSON.parse(localStorage.getItem('user'));
+                
+                if (storedUser && storedUser.username && storedUser.email) {
+                    // Update UI with stored user information
+                    document.getElementById('loggedUserName').textContent = storedUser.username;
+                    document.getElementById('loggedUserEmail').textContent = storedUser.email;
+                } else {
+                    // If no stored user data, try to get it from the token
+                    const token = localStorage.getItem('token');
+                    if (token) {
+                        // Decode the token to get user information
+                        const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+                        if (tokenPayload && tokenPayload.username && tokenPayload.email) {
+                            // Store the decoded user data
+                            localStorage.setItem('user', JSON.stringify({
+                                username: tokenPayload.username,
+                                email: tokenPayload.email,
+                                role: tokenPayload.role || 'user'
+                            }));
+                            
+                            // Update UI with decoded user information
+                            document.getElementById('loggedUserName').textContent = tokenPayload.username;
+                            document.getElementById('loggedUserEmail').textContent = tokenPayload.email;
+                        } else {
+                            throw new Error('Invalid token payload');
+                        }
+                    } else {
+                        throw new Error('No token found');
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading current user:', error);
+                document.getElementById('loggedUserName').textContent = 'Guest User';
+                document.getElementById('loggedUserEmail').textContent = 'guest@example.com';
+            }
         }
     </script>
 </body>
