@@ -3,6 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const app = express();
+const cors = require('cors');
 const PORT = process.env.PORT || 3000;
 
 // Connect to MongoDB
@@ -16,6 +17,12 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/express_m
 // Middleware to parse JSON bodies
 app.use(bodyParser.json());
 app.use(express.static('public'));
+// Allow specific origin (e.g., your frontend)
+app.use(cors({
+  origin: ['http://localhost:3000', 'https://samplenodepractise.onrender.com'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Import routes
 const productRoutes = require('./routes/productRoutes');
