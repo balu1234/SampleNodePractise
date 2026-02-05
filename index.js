@@ -2,44 +2,44 @@ require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const app = express();
 const cors = require('cors');
+
+const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Connect to MongoDB
+// Database Connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/express_mvc_api', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
-.then(() => console.log('Connected to MongoDB'))
-.catch(err => console.error('MongoDB connection error:', err));
+.then(() => console.log('✓ Connected to MongoDB'))
+.catch(err => console.error('✗ MongoDB connection error:', err));
 
-// Middleware to parse JSON bodies
+// Middleware
 app.use(bodyParser.json());
-app.use(express.static('public'));
-// Allow specific origin (e.g., your frontend)
-app.use(cors({
-  origin: ['http://localhost:3000', 'https://samplenodepractise.onrender.com'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cors());
 
-// Import routes
-const productRoutes = require('./routes/productRoutes');
-const authRoutes = require('./routes/authRoutes');
-const categoryRoutes = require('./routes/categoryRoutes');
-const tagRoutes = require('./routes/tagRoutes');
-const adminRoutes = require('./routes/adminRoutes');
-const smsRoutes = require('./routes/smsRoutes');
+// API Routes
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/product', require('./routes/productRoutes'));
+app.use('/api/categories', require('./routes/categoryRoutes'));
+app.use('/api/tags', require('./routes/tagRoutes'));
+app.use('/api/sms', require('./routes/smsRoutes'));
 
-// Use routes
-app.use('/api/auth', authRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/product', productRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/tags', tagRoutes);
-app.use('/api/sms', smsRoutes);
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'Backend API is running' });
+});
 
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ error: 'Endpoint not found' });
+});
+
+// Start Server
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`\n🚀 Backend API running on: http://localhost:${PORT}`);
+  console.log(`📊 Health check: http://localhost:${PORT}/api/health\n`);
 });
