@@ -2,8 +2,8 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { sendWelcomeEmail } = require('../utils/mailService');
 
-const generateToken = (userId) => {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+const generateToken = (userId, username) => {
+  return jwt.sign({ id: userId, username: username }, process.env.JWT_SECRET, {
     expiresIn: '30d'
   });
 };
@@ -28,7 +28,7 @@ exports.register = async (req, res) => {
     await user.save();
 
     // Generate token
-    const token = generateToken(user._id);
+    const token = generateToken(user._id, user.username);
 
     // Send welcome email
     let emailStatus = 'not sent';
@@ -78,7 +78,7 @@ exports.login = async (req, res) => {
     }
 
     // Generate token
-    const token = generateToken(user._id);
+    const token = generateToken(user._id, user.username);
 
     res.json({
       message: 'Login successful',

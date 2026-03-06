@@ -1,4 +1,4 @@
-const User = require('../models/User');
+const User = require('../../models/User');
 
 class ChatService {
     constructor(io) {
@@ -19,7 +19,7 @@ class ChatService {
             }
 
             // Store online user
-            this.onlineUsers.set(user._id, {
+            this.onlineUsers.set(user.id, {
                 socketId: socket.id,
                 username: user.username,
                 email: user.email
@@ -28,42 +28,79 @@ class ChatService {
             // Fetch all registered users and send initial user list
             await this.updateUserList();
 
-            // Handle private messages
+            // Handle messages
             socket.on('message', async (message) => {
-                const receiver = this.onlineUsers.get(message.receiverId);
-                if (receiver) {
-                    this.io.to(receiver.socketId).emit('message', {
-                        senderId: user._id,
-                        senderName: user.username,
+                console.log('Received message from client:', message);
+                console.log('User object from socket:', user);
+                console.log('User ID:', user.id);
+                console.log('User username:', user.username);
+                console.log('Message receiverId:', message.receiverId);
+                
+                const senderName = user.username || `User ${user.id?.substring(0, 8) || 'Unknown'}`;
+                
+                if (message.receiverId) {
+                    // Private message to specific user
+                    const receiver = this.onlineUsers.get(message.receiverId);
+                    if (receiver) {
+                        this.io.to(receiver.socketId).emit('message', {
+                            senderId: user.id,
+                            senderName: senderName,
+                            content: message.content,
+                            timestamp: new Date(),
+                            isPrivate: true
+                        });
+                        
+                        // Also send back to sender for their own chat history
+                        socket.emit('message', {
+                            senderId: user.id,
+                            senderName: senderName,
+                            receiverName: receiver.username,
+                            content: message.content,
+                            timestamp: new Date(),
+                            isPrivate: true
+                        });
+                    }
+                } else {
+                    // Broadcast to all users (group chat)
+                    socket.broadcast.emit('message', {
+                        senderId: user.id,
+                        senderName: senderName,
                         content: message.content,
-                        timestamp: new Date()
+                        timestamp: new Date(),
+                        isPrivate: false
+                    });
+                    
+                    // Also send back to sender for their own chat history
+                    socket.emit('message', {
+                        senderId: user.id,
+                        senderName: senderName,
+                        content: message.content,
+                        timestamp: new Date(),
+                        isPrivate: false
                     });
                 }
             });
 
             // Handle typing indicators
             socket.on('typing', (data) => {
-                const receiver = this.onlineUsers.get(data.userId);
-                if (receiver) {
-                    this.io.to(receiver.socketId).emit('typing', {
-                        userId: user._id,
-                        username: user.username
-                    });
-                }
+                // Broadcast to all other users that this user is typing
+                const username = user.username || `User ${user.id?.substring(0, 8) || 'Unknown'}`;
+                socket.broadcast.emit('typing', {
+                    userId: user.id,
+                    username: username
+                });
             });
 
-            socket.on('stop-typing', (data) => {
-                const receiver = this.onlineUsers.get(data.userId);
-                if (receiver) {
-                    this.io.to(receiver.socketId).emit('stop-typing', {
-                        userId: user._id
-                    });
-                }
+            socket.on('stop-typing', () => {
+                // Broadcast to all other users that this user stopped typing
+                socket.broadcast.emit('stop-typing', {
+                    userId: user.id
+                });
             });
 
             // Handle disconnection
             socket.on('disconnect', () => {
-                this.onlineUsers.delete(user._id);
+                this.onlineUsers.delete(user.id);
                 this.updateUserList();
             });
         });
@@ -71,10 +108,10 @@ class ChatService {
 
     async updateUserList() {
         try {
-            const users = await User.find({}, '_id username email');
+            const users = await User.find({}, '_id username email role');
             const userList = users.map(user => ({
                 ...user.toObject(),
-                online: this.onlineUsers.has(user._id)
+                online: this.onlineUsers.has(user._id.toString())
             }));
             this.io.emit('user-list', userList);
         } catch (error) {

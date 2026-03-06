@@ -111,10 +111,15 @@
             border-radius: 3px;
         }
 
-        .role-badge {
-            font-size: 0.8rem;
-            padding: 0.35rem 0.65rem;
-            border-radius: 0.35rem;
+        .message-header {
+            font-size: 0.75rem;
+            color: #6c757d;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            background-color: #f8f9fa;
+            border-radius: 0.25rem;
+            border-left: 3px solid #6c757d;
         }
 
         .tag-color {
@@ -691,7 +696,16 @@
 
         .user-name {
             color: white;
-            font-weight: 600;
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .side-user-name {
+            color: white;
+            font-weight: 700;
             font-size: 1rem;
             margin-bottom: 0.5rem;
             display: flex;
@@ -705,8 +719,19 @@
         }
 
         .user-email {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.85rem;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            word-break: break-all;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .side-user-email {
+            color: white;
+            font-weight: 700;
+            font-size: 0.8rem;
             word-break: break-all;
             display: flex;
             align-items: center;
@@ -814,6 +839,13 @@
             background-color: #f8f9fc;
         }
 
+        .user-item.selected {
+            background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
+            border-left: 4px solid #28a745;
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
+            transform: translateX(2px);
+        }
+
         .user-item.online {
             background-color: rgba(28, 200, 138, 0.1);
         }
@@ -825,6 +857,7 @@
         .user-name {
             font-weight: 600;
             display: block;
+            color: #007bff;
         }
 
         .user-email {
@@ -870,11 +903,11 @@
                     Admin Portal
                 </h3>
                 <div class="user-info">
-                    <div class="user-name">
+                    <div class="side-user-name">
                         <i class="bi bi-person-circle"></i>
                         <span id="loggedUserName">Loading...</span>
                     </div>
-                    <div class="user-email">
+                    <div class="side-user-email">
                         <i class="bi bi-envelope"></i>
                         <span id="loggedUserEmail">Loading...</span>
                     </div>
@@ -1002,6 +1035,9 @@
                                 <h5 class="card-title mb-0">Messages</h5>
                             </div>
                             <div class="card-body p-0">
+                                <div id="chat-header" class="mb-3">
+                                    <!-- Chat header will be dynamically updated -->
+                                </div>
                                 <div id="chat-messages" class="chat-messages">
                                     <!-- Messages will be loaded here -->
                                 </div>
@@ -2481,27 +2517,34 @@
                 // Get user data from localStorage that was stored during login
                 const storedUser = JSON.parse(localStorage.getItem('user'));
                 
+                console.log('Loading current user:', storedUser);
+                
                 if (storedUser && storedUser.username && storedUser.email) {
                     // Update UI with stored user information
                     document.getElementById('loggedUserName').textContent = storedUser.username;
                     document.getElementById('loggedUserEmail').textContent = storedUser.email;
+                    
+                    // Also update localStorage to ensure consistency
+                    localStorage.setItem('user', JSON.stringify(storedUser));
                 } else {
-                    // If no stored user data, try to get it from the token
+                    // If no stored user data, try to get it from token
                     const token = localStorage.getItem('token');
                     if (token) {
                         // Decode the token to get user information
                         const tokenPayload = JSON.parse(atob(token.split('.')[1]));
                         if (tokenPayload && tokenPayload.username && tokenPayload.email) {
-                            // Store the decoded user data
-                            localStorage.setItem('user', JSON.stringify({
+                            const userData = {
                                 username: tokenPayload.username,
                                 email: tokenPayload.email,
                                 role: tokenPayload.role || 'user'
-                            }));
+                            };
+                            
+                            // Store the decoded user data
+                            localStorage.setItem('user', JSON.stringify(userData));
                             
                             // Update UI with decoded user information
-                            document.getElementById('loggedUserName').textContent = tokenPayload.username;
-                            document.getElementById('loggedUserEmail').textContent = tokenPayload.email;
+                            document.getElementById('loggedUserName').textContent = userData.username;
+                            document.getElementById('loggedUserEmail').textContent = userData.email;
                         } else {
                             throw new Error('Invalid token payload');
                         }
@@ -2540,24 +2583,33 @@
 
             console.log('Received user list:', users);
 
-            if (users.length === 0) {
+            // Get current logged-in user
+            const currentUser = JSON.parse(localStorage.getItem('user'));
+
+            // Filter out current user from the list
+            const filteredUsers = users.filter(user => user._id !== currentUser?.id && user.id !== currentUser?.id);
+
+            if (filteredUsers.length === 0) {
                 userList.innerHTML = `
                     <div class="p-3 text-center text-muted">
                         <i class="bi bi-people"></i>
-                        <p class="mb-0">No users available</p>
+                        <p class="mb-0">No other users available</p>
                     </div>
                 `;
                 return;
             }
 
-            users.forEach(user => {
+            filteredUsers.forEach(user => {
                 const userElement = document.createElement('div');
                 userElement.className = `user-item ${user.online ? 'online' : 'offline'}`;
+                userElement.dataset.userId = user._id || user.id;
+                userElement.dataset.username = user.username;
                 userElement.innerHTML = `
                     <div class="user-info">
                         <div class="d-flex align-items-center">
                             <i class="bi bi-person-circle me-2"></i>
                             <span class="user-name">${user.username}</span>
+                            ${user.role ? `<span class="badge bg-primary role-badge">${user.role}</span>` : ''}
                         </div>
                         <span class="user-email">${user.email || 'No email'}</span>
                     </div>
@@ -2567,10 +2619,21 @@
                     </div>
                 `;
 
-                // Add click event to start private chat (if needed)
+                // Add click event to select user
                 userElement.addEventListener('click', () => {
-                    // You can implement private chat functionality here
-                    console.log(`Clicked on user: ${user.username}`);
+                    // Remove previous selection
+                    document.querySelectorAll('.user-item').forEach(item => {
+                        item.classList.remove('selected');
+                    });
+                    
+                    // Add selection to clicked user
+                    userElement.classList.add('selected');
+                    
+                    // Use the new switchToUser function
+                    switchToUser(user._id || user.id, user.username);
+                    
+                    console.log(`Selected user: ${user.username} (${user.role}) - ID: ${user._id || user.id}`);
+                    console.log('Updated chat context:', { user: currentChatUser, isPrivate: isPrivateChat });
                 });
 
                 userList.appendChild(userElement);
@@ -2579,7 +2642,67 @@
 
         // Handle incoming messages
         socket.on('message', (message) => {
-            appendMessage(message);
+            console.log('=== RECEIVED MESSAGE FROM SERVER ===');
+            console.log('Full message object:', JSON.stringify(message, null, 2));
+            console.log('senderId:', message.senderId);
+            console.log('senderName:', message.senderName);
+            console.log('receiverName:', message.receiverName);
+            console.log('isPrivate:', message.isPrivate);
+            console.log('Current chat context:', { user: currentChatUser, isPrivate: isPrivateChat });
+            
+            const currentUser = JSON.parse(localStorage.getItem('user'));
+            
+            // Check if this is a message from current user (sent message confirmation)
+            const isSentMessage = message.senderId === currentUser?.id;
+            
+            // Store message in appropriate chat history
+            if (message.isPrivate) {
+                // Private message - store in both sender and receiver histories
+                if (message.receiverId) {
+                    // Store in receiver's history
+                    if (!chatHistories[message.receiverId]) {
+                        chatHistories[message.receiverId] = [];
+                    }
+                    chatHistories[message.receiverId].push(message);
+                    
+                    // Store in sender's history
+                    if (!chatHistories[message.senderId]) {
+                        chatHistories[message.senderId] = [];
+                    }
+                    chatHistories[message.senderId].push(message);
+                }
+            } else {
+                // Group message - store in group history
+                groupChatHistory.push(message);
+            }
+            
+            // Only display message if it's relevant to current chat context
+            let shouldDisplayMessage = false;
+            
+            if (message.isPrivate) {
+                // Private message - only show if it's for current user or from current user
+                if (isSentMessage) {
+                    // Sent by current user - always show in chat history
+                    shouldDisplayMessage = true;
+                } else {
+                    // Received from another user - only show if it's from current chat user
+                    if (currentChatUser && message.senderId === currentChatUser.id) {
+                        shouldDisplayMessage = true;
+                    } else if (!currentChatUser) {
+                        // Not in private chat - show all private messages
+                        shouldDisplayMessage = true;
+                    }
+                }
+            } else {
+                // Group message - always show
+                shouldDisplayMessage = true;
+            }
+            
+            if (shouldDisplayMessage) {
+                appendMessage(message);
+            } else {
+                console.log('Message filtered out - not relevant to current chat context');
+            }
         });
 
         // Handle typing indicators
@@ -2591,17 +2714,78 @@
             hideTypingIndicator();
         });
 
+        // Global chat context
+        let currentChatUser = null;
+        let isPrivateChat = false;
+        let chatHistories = {}; // Store chat history per user
+        let groupChatHistory = []; // Store group chat history
+
+        // Switch to specific user chat
+        function switchToUser(userId, username) {
+            currentChatUser = { id: userId, username: username };
+            isPrivateChat = true;
+            updateChatHeader();
+            loadChatHistory(userId);
+        }
+
+        // Load chat history for specific user
+        function loadChatHistory(userId) {
+            const messagesContainer = document.getElementById('chat-messages');
+            messagesContainer.innerHTML = ''; // Clear current messages
+            
+            // Load chat history for this user
+            const userHistory = chatHistories[userId] || [];
+            userHistory.forEach(message => {
+                appendMessage(message);
+            });
+        }
+
+        // Load group chat history
+        function loadGroupChatHistory() {
+            const messagesContainer = document.getElementById('chat-messages');
+            messagesContainer.innerHTML = ''; // Clear current messages
+            
+            groupChatHistory.forEach(message => {
+                appendMessage(message);
+            });
+        }
+
         // Send message
         document.getElementById('message-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const messageInput = document.getElementById('message-input');
             const message = messageInput.value.trim();
+            const currentUser = JSON.parse(localStorage.getItem('user'));
+            
+            console.log('Current user from localStorage:', currentUser);
+            console.log('Sending message:', message);
+            console.log('Current chat context:', { user: currentChatUser, isPrivate: isPrivateChat });
             
             if (message) {
+                // Determine receiver based on chat context
+                let receiverId = null;
+                let receiverName = null;
+                
+                if (currentChatUser) {
+                    // Private chat with selected user
+                    receiverId = currentChatUser.id;
+                    receiverName = currentChatUser.username;
+                    isPrivateChat = true;
+                } else {
+                    // Group chat - no specific receiver
+                    receiverName = 'All';
+                    isPrivateChat = false;
+                }
+                
+                console.log('Message receiver:', { receiverId, receiverName });
+                
+                // Emit message to server
                 socket.emit('message', {
                     content: message,
+                    receiverId: receiverId,
                     timestamp: new Date()
                 });
+                
                 messageInput.value = '';
             }
         });
@@ -2616,18 +2800,99 @@
             }, 1000);
         });
 
+        // Update chat header based on context
+        function updateChatHeader() {
+            const chatHeader = document.getElementById('chat-header');
+            const chatMessages = document.getElementById('chat-messages');
+            
+            if (currentChatUser && isPrivateChat) {
+                // Private chat context
+                chatHeader.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <span class="text-muted">Chatting with: <strong>${currentChatUser.username}</strong></span>
+                        </div>
+                    </div>
+                `;
+                chatMessages.className = 'private-chat';
+            } else {
+                // Group chat context
+                chatHeader.innerHTML = `
+                    <h5 class="mb-0">Group Chat</h5>
+                `;
+                chatMessages.className = '';
+            }
+        }
+
+        // Switch to group chat
+        function switchToGroupChat() {
+            currentChatUser = null;
+            isPrivateChat = false;
+            updateChatHeader();
+            loadGroupChatHistory(); // Load group chat history
+        }
+
         // Helper functions
         function appendMessage(message) {
             const messagesContainer = document.getElementById('chat-messages');
+            const currentUser = JSON.parse(localStorage.getItem('user'));
+            
+            // Debug logging
+            console.log('=== APPENDING MESSAGE ===');
+            console.log('Full message object:', message);
+            console.log('Current user:', currentUser);
+            console.log('Current chat context:', { user: currentChatUser, isPrivate: isPrivateChat });
+            
+            // Determine if this is sent or received message
+            const isSentMessage = message.senderId === currentUser?.id;
+            
+            // Determine display name based on message type and context
+            let displayName = message.senderName;
+            
+            // Handle different username formats
+            if (displayName && displayName.startsWith('User ')) {
+                // Extract actual username from 'User 12345678' format
+                displayName = displayName.replace('User ', '');
+            }
+            
+            // For received messages, show proper sender name
+            // For sent messages, show "You" or receiver name
+            if (!isSentMessage) {
+                // This is a received message from another user
+                if (!displayName || displayName === 'Unknown') {
+                    displayName = 'User ' + (message.senderId?.substring(0, 8) || 'Unknown');
+                }
+            } else {
+                // This is a sent message from current user
+                if (message.receiverName && message.receiverName !== 'All') {
+                    displayName = `You → ${message.receiverName}`;
+                } else {
+                    displayName = 'You';
+                }
+            }
+            
+            // Create message header with receiver info for private messages
+            let messageHeader = '';
+            if (message.isPrivate && message.receiverName) {
+                if (isSentMessage) {
+                    messageHeader = `<div class="message-header"> To ${message.receiverName}</div>`;
+                } else {
+                    messageHeader = `<div class="message-header"> From ${message.senderName}</div>`;
+                }
+            } else if (message.isPrivate) {
+                // messageHeader = '<div class="message-header">Private message</div>';
+            }
+            
             const messageElement = document.createElement('div');
-            messageElement.className = `message ${message.senderId === socket.id ? 'sent' : 'received'}`;
-            messageElement.innerHTML = `
-                <div class="message-content">
-                    <span class="message-sender">${message.senderName}</span>
-                    <span class="message-text">${message.content}</span>
-                    <span class="message-time">${new Date(message.timestamp).toLocaleTimeString()}</span>
-                </div>
-            `;
+            messageElement.className = 'message ' + (isSentMessage ? 'sent' : 'received');
+            messageElement.innerHTML = 
+                '<div class="message-content">' +
+                    messageHeader +
+                    '<span class="message-sender">' + displayName + '</span>' +
+                    '<span class="message-text">' + message.content + '</span>' +
+                    '<span class="message-time">' + new Date(message.timestamp).toLocaleTimeString() + '</span>' +
+                '</div>'
+            ;
             messagesContainer.appendChild(messageElement);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
